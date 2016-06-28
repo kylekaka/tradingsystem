@@ -15,3 +15,10 @@ def test_data_to_weekly():
     result_t, result_p = sclw.data_to_weekly(test_t, test_p)
     assert_equal(result_t, test_t)
     print "testing"	
+    
+def test_trade_record():
+    test_t=[]
+    test_p=[]
+    result_t, result_p = sclw.trade_record(test_t, test_p)
+    assert_equal(result_t, test_t)
+    

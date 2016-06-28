@@ -7,7 +7,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 def read_file(filename):
     date_list =[]
     close_list = []
@@ -108,14 +107,14 @@ def data_to_weekly(t=[], p=[]):
             
     #print 'p[i]',p[i],i        
     return week_time_list, week_pirce_list
-    
+
+#计算收盘价的MA移动平均，这个函数可以考虑优化
 def ma(n1=13, p=[]):
     ma_list = []
     x = 0
     print len(p)
     for i in range(len(p)):
         #print i
-        
         if int(len(p)) - i <= n1 + 1:
             ma_list.append(0.00)
         else:
@@ -133,7 +132,8 @@ def ma(n1=13, p=[]):
     result = ma_list
     #print result
     return result
-    
+
+#计算EMA    
 def ema(n1=13, p=[], emafirst=0.0):
     ema_list = []
     k = 2.0 / (n1 + 1)
@@ -361,6 +361,20 @@ def stop_loss(t_flag=[], p=[], h=[], l=[]):
     t_flag.reverse()
     return stop_flag, stop_price
 
+def trade_record():
+    pass
+    
+#资金管理
+def money_manage():
+    pass    
+
+#收益率的计算
+def rate_calculate():
+    pass    
+        
+    
+def main():
+    pass
     
 c_list, v_list, d_list, refc_list, h_list, l_list= read_file('300_test.txt')
 #print c_list
@@ -415,3 +429,5 @@ df_300['Stopflag'] = s_flag
 df_300['Stopprice'] = s_price
 
 df_300.to_csv('df_300.csv')
+
+
