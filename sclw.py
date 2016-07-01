@@ -377,7 +377,7 @@ def trade_record(s_flag=[], h=[], l=[]):
         elif s_flag[i] == 4 and s_flag[i-1] == 0:
             open_record.append(h[i-1])
             close_record.append(0)
-            porfit_record.append(porfit_record[-1])
+            porfit_record.append(0)
         #空头平仓和多头开仓
         elif s_flag[i] == 4 and s_flag[i-1] == -4:
             open_record.append(h[i-1])
@@ -387,7 +387,7 @@ def trade_record(s_flag=[], h=[], l=[]):
         elif s_flag[i] == 4 and s_flag[i-1] == 4:
             open_record.append(open_record[-1])
             close_record.append(0)
-            porfit_record.append(porfit_record[-1])
+            porfit_record.append(0)
         #多头平仓    
         elif s_flag[i] == 0 and s_flag[i-1] == 4:
             open_record.append(0)
@@ -397,7 +397,7 @@ def trade_record(s_flag=[], h=[], l=[]):
         elif s_flag[i] == -4 and s_flag[i-1] == 0:
             open_record.append(l[i-1])
             close_record.append(0)
-            porfit_record.append(porfit_record[-1])
+            porfit_record.append(0)
         #多头平仓和空头开仓
         elif s_flag[i] == -4 and s_flag[i-1] == 4:
             open_record.append(l[i-1])
@@ -407,7 +407,7 @@ def trade_record(s_flag=[], h=[], l=[]):
         elif s_flag[i] == -4 and s_flag[i-1] == -4:
             open_record.append(open_record[-1])
             close_record.append(0)
-            porfit_record.append(porfit_record[-1])
+            porfit_record.append(0)
         #空头平仓    
         elif s_flag[i] == 0 and s_flag[i-1] == -4:
             open_record.append(0)
@@ -416,7 +416,7 @@ def trade_record(s_flag=[], h=[], l=[]):
         else:
             open_record.append(0)
             close_record.append(0)
-            porfit_record.append(porfit_record[-1])
+            porfit_record.append(0)
     s_flag.reverse()
     open_record.reverse()
     close_record.reverse()
@@ -424,65 +424,94 @@ def trade_record(s_flag=[], h=[], l=[]):
     return open_record, close_record, porfit_record
     
 #资金管理
-'''
-def money_manage(total_money, trade_min_num, t=[], s_flag, stop_price, open_record):
+def money_manage(total_money=0, trade_min_num=0, s_flag=[], stop_price=[], open_record=[], close_record=[]):
     month_position = []
     position_num = []
-    
-    t.reverse()
+    usable_money = []
+    #t.reverse()
     s_flag.reverse()
     stop_price.reverse()
     open_record.reverse()
-    for i in range(len(t)):
+    close_record.reverse()
+    for i in range(len(s_flag)):
         if i == 0:
             month_position.append(0)
             position_num.append(0)
+            usable_money.append(total_money)
         #多头开仓
         elif s_flag[i] == 4 and s_flag[i-1] == 0:
-            month_position.append( (abs(open_record[i] - stop_price[i]) / total_money)
-            #position_num.append(int((total_money * 0.02) / (abs(open_record[i] - stop_price[i]) * trade_min_num)))
+            position_temp_num = (usable_money[-1] * 0.02) / (abs(open_record[i] - stop_price[i]) * trade_min_num)
+            month_temp_p = (abs(open_record[i] - stop_price[i]) * int(position_temp_num)) / usable_money[-1]
+            print position_temp_num
+            print (abs(open_record[i] - stop_price[i]) * int(position_temp_num))
+            print 'month_temp_p', month_temp_p
+            month_position.append(month_temp_p)
+            position_num.append(int(position_temp_num))
+            usable_temp_money = usable_money[-1] - (open_record[i] * int(position_temp_num))
+            usable_money.append(usable_temp_money)
+            print usable_temp_money
         #空头平仓和多头开仓
         elif s_flag[i] == 4 and s_flag[i-1] == -4:
-            open_record.append(h[i-1])
-            close_record.append(h[i-1])
-            porfit_record.append(open_record[i-1]-close_record[i]+porfit_record[-1])
-        #多头持仓    
+            position_temp_num = (usable_money[-1] * 0.02) / (abs(open_record[i] - stop_price[i]) * trade_min_num)
+            month_temp_p = (abs(open_record[i] - stop_price[i]) * int(position_temp_num)) / usable_money[-1]
+            month_position.append(month_temp_p)
+            position_num.append(int(position_temp_num))
+            usable_temp_money = usable_money[-1] + (close_record[i] * int(position_num[i-1])) - (open_record[i] * int(position_temp_num))
+            usable_money.append(usable_temp_money)
+        #多头持仓 
         elif s_flag[i] == 4 and s_flag[i-1] == 4:
-            open_record.append(open_record[-1])
-            close_record.append(0)
-            porfit_record.append(porfit_record[-1])
-        #多头平仓    
+            month_position.append(month_position[-1])
+            position_num.append(position_num[-1])
+            usable_money.append(usable_money[-1])
+        #多头平仓 
         elif s_flag[i] == 0 and s_flag[i-1] == 4:
-            open_record.append(0)
-            close_record.append(l[i-1])   
-            porfit_record.append(close_record[i]-open_record[i-1]+porfit_record[-1])
+            month_position.append(0)
+            position_num.append(0)
+            usable_temp_money = usable_money[-1] + (close_record[i] * int(position_num[i-1]))
+            print '********close_record[i]------', close_record[i]
+            print close_record[i] * int(position_num[i-1])
+            print usable_temp_money
+            usable_money.append(usable_temp_money)
         #空头开仓
         elif s_flag[i] == -4 and s_flag[i-1] == 0:
-            temp = abs(open_record[i] - stop_price[i]) / total_money
-            month_position.append(temp + month_position[-1])
-            position_num.append(int((total_money * 0.02) / (abs(open_record[i] - stop_price[i]) * trade_min_num)))
+            position_temp_num = (usable_money[-1] * 0.02) / (abs(open_record[i] - stop_price[i]) * trade_min_num)
+            month_temp_p = (abs(open_record[i] - stop_price[i]) * int(position_temp_num)) / usable_money[-1]
+            month_position.append(month_temp_p)
+            position_num.append(int(position_temp_num))
+            usable_temp_money = usable_money[-1] - (open_record[i] * int(position_temp_num))
+            usable_money.append(usable_temp_money)
         #多头平仓和空头开仓
         elif s_flag[i] == -4 and s_flag[i-1] == 4:
-            open_record.append(l[i-1])
-            close_record.append(l[i-1])
-            porfit_record.append(close_record[i]-open_record[i-1]+porfit_record[-1])
-        #空头持仓    
+            position_temp_num = (usable_money[-1] * 0.02) / (abs(open_record[i] - stop_price[i]) * trade_min_num)
+            month_temp_p = (abs(open_record[i] - stop_price[i]) * int(position_temp_num)) / usable_money[-1]
+            month_position.append(month_temp_p)
+            position_num.append(int(position_temp_num))
+            usable_temp_money = usable_money[-1] + (close_record[i] * int(position_num[i-1])) - (open_record[i] * int(position_temp_num))
+            usable_money.append(usable_temp_money)
+        #空头持仓 
         elif s_flag[i] == -4 and s_flag[i-1] == -4:
-            open_record.append(open_record[-1])
-            close_record.append(0)
-            porfit_record.append(porfit_record[-1])
-        #空头平仓    
+            month_position.append(month_position[-1])
+            position_num.append(position_num[-1])
+            usable_money.append(usable_money[-1])
+        #空头平仓 
         elif s_flag[i] == 0 and s_flag[i-1] == -4:
-            open_record.append(0)
-            close_record.append(h[i-1]) 
-            porfit_record.append(open_record[i-1]-close_record[i]+porfit_record[-1])
+            month_position.append(0)
+            position_num.append(0)
+            usable_temp_money = usable_money[-1] + (close_record[i] * int(position_num[i-1]))
+            usable_money.append(usable_temp_money)
         else:
-            open_record.append(0)
-            close_record.append(0)
-            porfit_record.append(porfit_record[-1])   
-    
-    return position_num
-'''  
+            month_position.append(0)
+            position_num.append(0)
+            usable_money.append(usable_money[-1])
+    s_flag.reverse()
+    stop_price.reverse()
+    open_record.reverse() 
+    close_record.reverse()
+    month_position.reverse() 
+    position_num.reverse() 
+    usable_money.reverse() 
+    return month_position, position_num, usable_money
+
 
 #收益率的计算
 def rate_calculate():
@@ -538,6 +567,10 @@ open_record1, close_record1, porfit_record1 = trade_record(s_flag, h_list, l_lis
 print '-**-' * 10
 print len(open_record1), len(close_record1), len(porfit_record1)
 
+month_position1, position_num1, usable_money1 = money_manage(1000000, 10, s_flag, s_price, open_record1, close_record1)
+print '-++-' * 10
+print len(month_position1), len(position_num1), len(usable_money1)
+
 df_300 = pd.read_csv('399300.csv')
 
 df_300['first_w_list'] = first_w_list
@@ -551,6 +584,10 @@ df_300['Stopprice'] = s_price
 df_300['Openrecord'] = open_record1
 df_300['Closerecord'] = close_record1
 df_300['Porfitrecord'] = porfit_record1
+
+df_300['Monthpositon'] = month_position1
+df_300['PositionNum'] = position_num1
+df_300['UsableMoney'] = usable_money1
 
 df_300.to_csv('df_300.csv', index=False)
 
